@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Absolute Judgment</title>
+    <script src="jspsych/jspsych.js"></script>
+    <script src="jspsych/jspsychsheet.js"></script>
+    <script src="jspsych/plugin-survey-text.js"></script>
+    <script src="jspsych/plugin-preload.js"></script>
+    <script src="jspsych/plugin-html-keyboard-response.js"></script>
+    <script src="jspsych/plugin-html-button-response.js"></script>
+    <script src="jspsych/plugin-html-slider-response.js"></script>
+    <script src="jspsych/plugin-audio-button-response.js"></script>
+    <script src="jspsych/plugin-audio-keyboard-response.js"></script>
+    <script src="jspsych/plugin-audio-slider-response.js"></script>
+    <link href="jspsych/jspsych.css" rel="stylesheet" type="text/css" />
+    <link href="jspsych/jspsychsheet.css" rel="stylesheet" type="text/css" />
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <style>
+        .jspsych-display-element {
+            font-size: 24px;
+        }
+    </style>
+</head>
+  <body></body>
+  <script>
+    var jsPsych = initJsPsych({
+        show_progress_bar: true,
+        on_finish: function () {
+        url = "https://script.google.com/macros/s/AKfycbyK7W0r5YrxS8hOf1xYEX6aphLIZDU1YKVyJzcv_6myFvaYSIFpAJeatGpTDiecO8Lznw/exec";
+        jsPsychSheet.uploadData(url, jsPsych.data.get().csv())
+        }
+    });
+    var timeline = [];
+
+    var preload = {
+    type: jsPsychPreload,
+    auto_preload: true
+    }
+
+    var idInputTrial = {
+            type: jsPsychSurveyText,
+            questions: [
+                {prompt: 'User ID:', placeholder: '000000', required: true},
+            ]
+    };
+    timeline.push(idInputTrial);
+
+    var welcome = {
+        type: jsPsychHtmlButtonResponse,
+            stimulus: `
+            <p>Welcome to the experiment.</p>
+            <p>This is an experiment of absolute judgement of pure tones.</p>
+            `,
+            choices:['Continue to instructions']
+    };
+    timeline.push(welcome);
+
+var instructions1 = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+    <div style="text-align: left; margin: 3in; margin-bottom: 1in; margin-top: 1in;">
+        <p>First, you will hear five tones in ascending order of lowness to highness in pitch, and then in descending order.<br>
+            The lowest tone is tone 1, the second lowest tone is tone 2, and so on.
+            As you hear each tone, try to associate the pitch (or lowness/highness) of the tone with its numerical name (Tone 1 to Tone 5).
+            You will hear the ascending and descending series twice.</p>
+    </div>
+    `,
+    choices:['Click here to listen to the series of 5 tones.']
+};
+timeline.push(instructions1);
+
+var FirstFive = {
+    type:jsPsychAudioKeyboardResponse,
+    stimulus: 'sound/chrom5C.mp3',
+    choices: "NO_KEYS",
+    trial_ends_after_audio: true
+};
+timeline.push(FirstFive);
+var delay = {
+                type: jsPsychHtmlKeyboardResponse,
+                stimulus: '',
+                trial_duration: 1000,
+                response_ends_trial: false
+            }
+timeline.push(delay);
+timeline.push(FirstFive);
+
+var nextButton = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: 'Click "Next" to start trials.',
+    choices: ['Next']
+};
+timeline.push(nextButton);
+
+var StimChrom5C = ['sound/0-C.mp3', 'sound/1-Csharp.mp3', 'sound/2-D.mp3', 'sound/3-Eflat.mp3', 'sound/4-E.mp3'];
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+StimChrom5C = shuffle(StimChrom5C);
+
+for (var i = 0; i < StimChrom5C.length; i++) {
+    var correctKey;
+    switch(StimChrom5C[i]) {
+        case 'sound/0-C.mp3':
+            correctKey = '1';
+            break;
+        case 'sound/1-Csharp.mp3':
+            correctKey = '2';
+            break;
+        case 'sound/2-D.mp3':
+            correctKey = '3';
+            break;
+        case 'sound/3-Eflat.mp3':
+            correctKey = '4';
+            break;
+        case 'sound/4-E.mp3':
+            correctKey = '5';
+            break;
+    }
+    var chrom5Ctrial = {
+        type: jsPsychAudioKeyboardResponse,
+        stimulus: StimChrom5C[i],
+        choices: ['1','2','3','4','5'],
+        prompt:`If you think the tone is Tone 1, press 1, if you think the tone is Tone 2, press 2, and so on.`,
+        correct_response: correctKey,
+        data: {correct_response: correctKey},
+        on_finish: function(data){
+        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
+      }
+    };
+    timeline.push(chrom5Ctrial);
+}
+
+var startSecondFive = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: 'You are done with the first series of tones. Click "Next" to start playing the second series of tones.',
+    choices: ['Next']
+};
+timeline.push(startSecondFive);
+
+var SecondFive = {
+    type:jsPsychAudioKeyboardResponse,
+    stimulus: 'sound/chrom5Eflat.mp3',
+    choices: "NO_KEYS",
+    trial_ends_after_audio: true
+};
+timeline.push(SecondFive);
+timeline.push(delay);
+timeline.push(SecondFive);
+timeline.push(nextButton);
+
+var StimChrom5Eflat = ['sound/3-Eflat.mp3', 'sound/4-E.mp3', 'sound/5-F.mp3', 'sound/6-Fsharp.mp3', 'sound/7-G.mp3'];
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+StimChrom5Eflat = shuffle(StimChrom5Eflat);
+
+for (var i = 0; i < StimChrom5Eflat.length; i++) {
+    var correctKey;
+    switch(StimChrom5Eflat[i]) {
+        case 'sound/3-Eflat.mp3':
+            correctKey = '1';
+            break;
+        case 'sound/4-E.mp3':
+            correctKey = '2';
+            break;
+        case 'sound/5-F.mp3':
+            correctKey = '3';
+            break;
+        case 'sound/6-Fsharp.mp3':
+            correctKey = '4';
+            break;
+        case 'sound/7-G.mp3':
+            correctKey = '5';
+            break;
+    }
+    var chrom5Eflattrial = {
+        type: jsPsychAudioKeyboardResponse,
+        stimulus: StimChrom5Eflat[i],
+        choices: ['1','2','3','4','5'],
+        prompt:`If you think the tone is Tone 1, press 1, if you think the tone is Tone 2, press 2, and so on.`,
+        correct_response: correctKey,
+        data: {correct_response: correctKey},
+        on_finish: function(data){
+        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
+      }
+    };
+    timeline.push(chrom5Eflattrial);
+}
+
+var startThirdFive = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: 'You are done with the second series of tones. Click "Next" to start playing the third series of tones.',
+    choices: ['Next']
+};
+timeline.push(startThirdFive);
+
+var ThirdFive = {
+    type:jsPsychAudioKeyboardResponse,
+    stimulus: 'sound/chrom5F.mp3',
+    choices: "NO_KEYS",
+    trial_ends_after_audio: true
+};
+timeline.push(ThirdFive);
+timeline.push(delay);
+timeline.push(ThirdFive);
+timeline.push(nextButton);
+
+var StimChrom5F = ['sound/5-F.mp3', 'sound/6-Fsharp.mp3', 'sound/7-G.mp3', 'sound/8-Aflat.mp3', 'sound/9-A.mp3'];
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+StimChrom5F = shuffle(StimChrom5F);
+
+for (var i = 0; i < StimChrom5F.length; i++) {
+    var correctKey;
+    switch(StimChrom5F[i]) {
+        case 'sound/5-F.mp3':
+            correctKey = '1';
+            break;
+        case 'sound/6-Fsharp.mp3':
+            correctKey = '2';
+            break;
+        case 'sound/7-G.mp3':
+            correctKey = '3';
+            break;
+        case 'sound/8-Aflat.mp3':
+        correctKey = '4';
+            break;
+        case 'sound/9-A.mp3':
+        correctKey = '5';
+            break;
+    }
+    var chrom5Ftrial = {
+        type: jsPsychAudioKeyboardResponse,
+        stimulus: StimChrom5F[i],
+        choices: ['1','2','3','4','5'],
+        prompt:`If you think the tone is Tone 1, press 1, if you think the tone is Tone 2, press 2, and so on.`,
+        correct_response: correctKey,
+        data: {correct_response: correctKey},
+        on_finish: function(data){
+        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
+      }
+    };
+    timeline.push(chrom5Ftrial);
+}
+
+var startFirstTwelve = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `You are done with the first half of the experiment.
+    This second half is just like the first half, except that now there are 12 tones.<br>
+    The lowest tone is tone 1, the second lowest tone is tone 2, and so on.`,
+    choices: ['Next']
+};
+timeline.push(startFirstTwelve);
+
+var FirstTwelve = {
+    type:jsPsychAudioKeyboardResponse,
+    stimulus: 'sound/chrom12C.mp3',
+    choices: "NO_KEYS",
+    trial_ends_after_audio: true
+};
+timeline.push(FirstTwelve);
+timeline.push(delay);
+timeline.push(FirstTwelve);
+timeline.push(nextButton);
+
+var StimChrom12C = ['sound/0-C.mp3','sound/1-Csharp.mp3','sound/2-D.mp3','sound/3-Eflat.mp3','sound/4-E.mp3','sound/5-F.mp3',
+'sound/6-Fsharp.mp3','sound/7-G.mp3','sound/8-Aflat.mp3','sound/9-A.mp3','sound/10-Bflat.mp3','sound/11-B.mp3'];
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+StimChrom12C = shuffle(StimChrom12C);
+
+for (var i = 0; i < StimChrom12C.length; i++) {
+    var correctKey;
+    switch(StimChrom12C[i]) {
+        case 'sound/0-C.mp3':
+            correctKey = '1';
+            break;
+        case 'sound/1-Csharp.mp3':
+            correctKey = '2';
+            break;
+        case 'sound/2-D.mp3':
+            correctKey = '3';
+            break;
+        case 'sound/3-Eflat.mp3':
+            correctKey = '4';
+            break;
+        case 'sound/4-E.mp3':
+            correctKey = '5';
+            break;
+        case 'sound/5-F.mp3':
+        correctKey = '6';
+            break;
+        case 'sound/6-Fsharp.mp3':
+            correctKey = '7';
+            break;
+        case 'sound/7-G.mp3':
+            correctKey = '8';
+            break;
+        case 'sound/8-Aflat.mp3':
+            correctKey = '9';
+            break;
+        case 'sound/9-A.mp3':
+            correctKey = '0';
+            break;
+        case 'sound/10-Bflat.mp3':
+        correctKey = 'e';
+            break;
+        case 'sound/11-B.mp3':
+            correctKey = 't';
+            break;
+    }
+    var chrom12Ctrial = {
+        type: jsPsychAudioKeyboardResponse,
+        stimulus: StimChrom12C[i],
+        choices: ['1','2','3','4','5','6','7','8','9','0','e','t'],
+        prompt:`If you think the tone is Tone 1, press 1, if you think the tone is Tone 2, press 2, and so on.<br>
+        You will press "0" for Tone 10, "e" for Tone 11, and "t" for Tone 12.`,
+        correct_response: correctKey,
+        data: {correct_response: correctKey},
+        on_finish: function(data){
+        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
+      }
+    };
+    timeline.push(chrom12Ctrial);
+}
+
+var startSecondTwelve = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `You are done with the first series of 12 tones. Click "Next" to start playing the second series of 12 tones.`,
+    choices: ['Next']
+};
+timeline.push(startSecondTwelve);
+
+var SecondTwelve = {
+    type:jsPsychAudioKeyboardResponse,
+    stimulus: 'sound/chrom12Eflat.mp3',
+    choices: "NO_KEYS",
+    trial_ends_after_audio: true
+};
+timeline.push(SecondTwelve);
+timeline.push(delay);
+timeline.push(SecondTwelve);
+timeline.push(nextButton);
+
+var StimChrom12Eflat = ['sound/3-Eflat.mp3','sound/4-E.mp3','sound/5-F.mp3','sound/6-Fsharp.mp3','sound/7-G.mp3','sound/8-Aflat.mp3',
+'sound/9-A.mp3','sound/10-Bflat.mp3','sound/11-B.mp3','sound/12-C.mp3','sound/13-Csharp.mp3','sound/14-D.mp3'];
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+StimChrom12Eflat = shuffle(StimChrom12Eflat);
+
+for (var i = 0; i < StimChrom12Eflat.length; i++) {
+    var correctKey;
+    switch(StimChrom12Eflat[i]) {
+        case 'sound/3-Eflat.mp3':
+            correctKey = '1';
+            break;
+        case 'sound/4-E.mp3':
+            correctKey = '2';
+            break;
+        case 'sound/5-F.mp3':
+        correctKey = '3';
+            break;
+        case 'sound/6-Fsharp.mp3':
+            correctKey = '4';
+            break;
+        case 'sound/7-G.mp3':
+            correctKey = '5';
+            break;
+        case 'sound/8-Aflat.mp3':
+            correctKey = '6';
+            break;
+        case 'sound/9-A.mp3':
+            correctKey = '7';
+            break;
+        case 'sound/10-Bflat.mp3':
+        correctKey = '8';
+            break;
+        case 'sound/11-B.mp3':
+            correctKey = '9';
+            break;
+        case 'sound/12-C.mp3':
+        correctKey = '0';
+            break;
+        case 'sound/13-Csharp.mp3':
+        correctKey = 'e';
+            break;
+        case 'sound/14-D.mp3':
+            correctKey = 't';
+            break;
+    }
+    var chrom12Eflattrial = {
+        type: jsPsychAudioKeyboardResponse,
+        stimulus: StimChrom12Eflat[i],
+        choices: ['1','2','3','4','5','6','7','8','9','0','e','t'],
+        prompt:`If you think the tone is Tone 1, press 1, if you think the tone is Tone 2, press 2, and so on.<br>
+        You will press "0" for Tone 10, "e" for Tone 11, and "t" for Tone 12.`,
+        correct_response: correctKey,
+        data: {correct_response: correctKey},
+        on_finish: function(data){
+        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
+      }
+    };
+    timeline.push(chrom12Eflattrial);
+}
+
+var startThirdTwelve = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `You are done with the second series of 12 tones. Click "Next" to start playing the final series of 12 tones.`,
+    choices: ['Next']
+};
+timeline.push(startThirdTwelve);
+
+var ThirdTwelve = {
+    type:jsPsychAudioKeyboardResponse,
+    stimulus: 'sound/chrom12F.mp3',
+    choices: "NO_KEYS",
+    trial_ends_after_audio: true
+};
+timeline.push(ThirdTwelve);
+timeline.push(delay);
+timeline.push(ThirdTwelve);
+timeline.push(nextButton);
+
+var StimChrom12F = ['sound/5-F.mp3','sound/6-Fsharp.mp3','sound/7-G.mp3','sound/8-Aflat.mp3','sound/9-A.mp3','sound/10-Bflat.mp3',
+'sound/11-B.mp3','sound/12-C.mp3','sound/13-Csharp.mp3','sound/14-D.mp3','sound/15-Eflat.mp3','sound/16-E.mp3'];
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+StimChrom12F = shuffle(StimChrom12F);
+
+for (var i = 0; i < StimChrom12F.length; i++) {
+    var correctKey;
+    switch(StimChrom12F[i]) {
+        case 'sound/5-F.mp3':
+        correctKey = '1';
+            break;
+        case 'sound/6-Fsharp.mp3':
+            correctKey = '2';
+            break;
+        case 'sound/7-G.mp3':
+            correctKey = '3';
+            break;
+        case 'sound/8-Aflat.mp3':
+            correctKey = '4';
+            break;
+        case 'sound/9-A.mp3':
+            correctKey = '5';
+            break;
+        case 'sound/10-Bflat.mp3':
+        correctKey = '6';
+            break;
+        case 'sound/11-B.mp3':
+            correctKey = '7';
+            break;
+        case 'sound/12-C.mp3':
+        correctKey = '8';
+            break;
+        case 'sound/13-Csharp.mp3':
+            correctKey = '9';
+            break;
+        case 'sound/14-D.mp3':
+            correctKey = '0';
+            break;
+        case 'sound/15-Eflat.mp3':
+            correctKey = 'e';
+            break;
+        case 'sound/16-E.mp3':
+            correctKey = 't';
+            break;
+    }
+    var chrom12Ftrial = {
+        type: jsPsychAudioKeyboardResponse,
+        stimulus: StimChrom12F[i],
+        choices: ['1','2','3','4','5','6','7','8','9','0','e','t'],
+        prompt:`If you think the tone is Tone 1, press 1, if you think the tone is Tone 2, press 2, and so on.<br>
+        You will press "0" for Tone 10, "e" for Tone 11, and "t" for Tone 12.`,
+        correct_response: correctKey,
+        data: {correct_response: correctKey},
+        on_finish: function(data){
+        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
+      }
+    };
+    timeline.push(chrom12Ftrial);
+}
+
+    var end = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <p>You've come to the end of the experiment.</p>
+        <p>Thank you for participating.</p>
+        <p>You've contributed to science!</p>
+        <p>Woohoo!</p>
+        `,
+        choices:['End experiment and upload my data'],
+        on_finish: function(data) {
+            document.body.innerHTML += '<p>Please wait for your data to finish uploading before closing the browser window.</p>';
+        },
+    };
+    timeline.push(end);
+
+    var all_data = jsPsych.data.get();
+    console.log(all_data.csv());
+
+    jsPsych.run(timeline);
+
+  </script>
+</html>
